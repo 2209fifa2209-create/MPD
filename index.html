@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>SportStream TV — Live TV & Sports Player</title>
+  <title>SportStream TV </title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -190,11 +190,24 @@
               LIVE
             </span>
           </div>
-          <p class="text-[11px] text-slate-400 truncate hidden md:block">เครื่องเล่นสตรีมสดกีฬา & ทีวีออนไลน์ (.m3u8)</p>
+          <p class="text-[11px] text-slate-400 truncate hidden md:block">รองรับ http / https • .m3u8 / .mp4 / .webm • Referer</p>
         </div>
       </div>
 
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button
+          id="openProxySettingsBtn"
+          type="button"
+          class="px-2.5 py-2 rounded-xl text-xs font-semibold bg-card hover:bg-slate-700/80 text-sky-300 border border-slate-700/80 active:scale-95 transition flex items-center gap-1.5"
+          title="ตั้งค่า Proxy สำหรับส่ง Referer"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span class="hidden sm:inline">Proxy</span>
+        </button>
+
         <button
           id="toggleMiniBarBtn"
           type="button"
@@ -310,8 +323,8 @@
 
             <div id="errorBox" class="hidden pointer-events-auto max-w-md bg-slate-950/90 backdrop-blur-md border border-rose-500/40 rounded-2xl p-4 shadow-2xl">
               <p class="text-sm font-bold text-rose-400 mb-1">ไม่สามารถเล่นสตรีมนี้ได้</p>
-              <p id="errorMessage" class="text-xs text-slate-300 mb-3 leading-relaxed">ลิงก์อาจหมดอายุ ติดข้อจำกัด CORS หรือต้องการ HTTP Referer เฉพาะ</p>
-              <div class="flex items-center justify-center gap-2">
+              <p id="errorMessage" class="text-xs text-slate-300 mb-3 leading-relaxed">ลิงก์อาจหมดอายุ ติด Mixed Content (http บนหน้า https) ติด CORS หรือต้องการ Referer / Proxy</p>
+              <div class="flex items-center justify-center gap-2 flex-wrap">
                 <button id="retryStreamBtn" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
                   ลองใหม่อีกครั้ง
                 </button>
@@ -402,7 +415,7 @@
                 <h1 id="detailChannelName" class="font-bold text-sm sm:text-base text-white truncate">ชื่อช่อง</h1>
                 <span id="detailCategoryBadge" class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/25 shrink-0">หมวดหมู่</span>
               </div>
-              <p id="detailChannelDesc" class="text-xs text-slate-400 truncate mt-0.5">รายละเอียดรายการสด</p>
+              <p id="detailChannelUrlText" class="text-xs text-slate-400 truncate mt-0.5">ลิงก์สตรีม</p>
             </div>
           </div>
 
@@ -431,7 +444,7 @@
         <input
           id="searchInput"
           type="search"
-          placeholder="ค้นหาช่องกีฬา, ทีวี, ข่าว หรือลิงก์ที่เพิ่มเอง..."
+          placeholder="ค้นหาช่อง, ลิงก์ http/https หรือ Referer..."
           class="w-full pl-10 pr-9 py-2.5 rounded-xl bg-surface border border-slate-800 focus:border-emerald-500 text-sm text-white placeholder-slate-400 outline-none transition"
         />
         <button
@@ -450,40 +463,58 @@
 
       <div id="emptyState" class="hidden text-center py-10 px-4 bg-surface rounded-2xl border border-slate-800/80">
         <p class="text-sm font-semibold text-slate-300">ไม่พบช่องรายการที่ตรงกับตัวกรอง</p>
-        <p class="text-xs text-slate-500 mt-1">ลองเปลี่ยนหมวดหมู่ ค้นหาคำอื่น หรือกดปุ่ม "เพิ่มลิงก์" เพื่อเพิ่มสตรีมของคุณเอง</p>
+        <p class="text-xs text-slate-500 mt-1">ลองเปลี่ยนหมวดหมู่ ค้นหาคำอื่น หรือกดปุ่ม "เพิ่มลิงก์"</p>
       </div>
     </section>
   </main>
 
   <!-- Add Custom Stream Modal -->
-  <div id="addStreamModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-    <div class="bg-surface border border-slate-700/90 rounded-2xl w-full max-w-md p-5 shadow-2xl">
+  <div id="addStreamModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-surface border border-slate-700/90 rounded-2xl w-full max-w-md p-5 shadow-2xl my-auto">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-base text-white">เพิ่มลิงก์สตรีม (.m3u8)</h3>
+        <h3 class="font-bold text-base text-white">เพิ่มลิงก์สตรีม / ไฟล์วิดีโอ</h3>
         <button id="closeModalBtn" type="button" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
       </div>
 
       <form id="addStreamForm" class="space-y-3.5">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">ชื่อช่องรายการ *</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">ชื่อช่องหรือชื่อไฟล์ *</label>
           <input
             id="streamNameInput"
             type="text"
             required
-            placeholder="เช่น สนามกีฬาสด HD, ช่องข่าวกีฬา"
+            placeholder="เช่น สนามกีฬาสด HD, คลิปทดสอบ .mp4"
             class="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-sm text-white outline-none"
           />
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">ลิงก์สตรีม (.m3u8 / http / https) *</label>
-          <input
-            id="streamUrlInput"
-            type="url"
-            required
-            placeholder="https://example.com/live/stream.m3u8"
-            class="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-sm text-white outline-none"
-          />
+        <!-- Combined Link + Referer Box -->
+        <div class="p-3 rounded-xl bg-card/70 border border-slate-700/90 space-y-2.5">
+          <div>
+            <label class="block text-xs font-semibold text-emerald-300 mb-1">ลิงก์ไฟล์หรือสตรีม (http / https, .m3u8, .mp4, .webm) *</label>
+            <input
+              id="streamUrlInput"
+              type="text"
+              required
+              placeholder="http://... หรือ https://example.com/live/stream.m3u8"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-slate-700 focus:border-emerald-500 text-sm text-white outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-sky-300 mb-1">Referer (ในช่องเดียวกับลิงก์)</label>
+            <input
+              id="streamRefererInput"
+              type="text"
+              placeholder="https://source-site.com/"
+              class="w-full px-3.5 py-2 rounded-xl bg-surface border border-slate-700 focus:border-sky-400 text-xs text-white outline-none"
+            />
+          </div>
+
+          <label class="flex items-center gap-2 pt-0.5 text-xs text-slate-200 cursor-pointer">
+            <input id="streamUseProxyInput" type="checkbox" class="rounded accent-emerald-500 w-4 h-4" />
+            <span>ส่งผ่าน Proxy URL ที่ตั้งค่าไว้ (ใช้เมื่อต้นทางบังคับ Referer หรือเป็น http)</span>
+          </label>
         </div>
 
         <div class="grid grid-cols-2 gap-2.5">
@@ -497,6 +528,7 @@
               <option value="ทีวีดิจิทัล">ทีวีดิจิทัล</option>
               <option value="ข่าว">ข่าว</option>
               <option value="บันเทิง">บันเทิง</option>
+              <option value="ไฟล์วิดีโอ">ไฟล์วิดีโอ</option>
             </select>
           </div>
 
@@ -504,24 +536,11 @@
             <label class="block text-xs font-semibold text-slate-300 mb-1">ลิงก์โลโก้ (ไม่บังคับ)</label>
             <input
               id="streamLogoInput"
-              type="url"
-              placeholder="https://..."
+              type="text"
+              placeholder="https://... หรือ http://..."
               class="w-full px-3 py-2.5 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-sm text-white outline-none"
             />
           </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Custom HTTP Referer (บันทึกเก็บไว้เป็นข้อมูล)</label>
-          <input
-            id="streamRefererInput"
-            type="text"
-            placeholder="https://source-site.com/"
-            class="w-full px-3.5 py-2 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-xs text-white outline-none"
-          />
-          <p class="text-[11px] text-amber-300/90 mt-1.5 leading-relaxed">
-            หมายเหตุ: เบราว์เซอร์ทั่วไปไม่อนุญาตให้ JavaScript แก้ไข header <code class="text-emerald-300">Referer</code> โดยตรง หากสตรีมต้นทางบล็อก cross-origin หรือบังคับ Referer ฝั่งเซิร์ฟเวอร์ แนะนำให้รันผ่าน Proxy หรือแอป Native/WebView ที่ตั้งค่า header ได้ครับ
-          </p>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2">
@@ -543,6 +562,41 @@
     </div>
   </div>
 
+  <!-- Proxy Settings Modal -->
+  <div id="proxyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="bg-surface border border-slate-700/90 rounded-2xl w-full max-w-md p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-base text-white">ตั้งค่า Proxy / Relay สำหรับ Referer</h3>
+        <button id="closeProxyModalBtn" type="button" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+        ใส่ URL ของ Proxy Server โดยรองรับตัวแปร <code class="text-emerald-300">{url}</code> และ <code class="text-sky-300">{referer}</code> (หรือระบบจะต่อท้าย <code class="text-emerald-300">?url=...&referer=...</code> ให้เอง)
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Proxy Endpoint Template</label>
+          <input
+            id="proxyTemplateInput"
+            type="text"
+            placeholder="https://your-worker.example.com/?url={url}&referer={referer}"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-xs text-white outline-none"
+          />
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button id="cancelProxyModalBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-card hover:bg-slate-700 text-slate-300 transition">
+            ปิด
+          </button>
+          <button id="saveProxyBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
+            บันทึก Proxy
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[10000] px-4 py-2 rounded-full bg-slate-900/95 text-white text-xs font-semibold border border-slate-700 shadow-2xl opacity-0 pointer-events-none transition-opacity duration-200">
     แจ้งเตือน
@@ -551,37 +605,44 @@
   <script>
     (function () {
       const STORAGE_KEYS = {
-        CUSTOM_CHANNELS: 'sportstream_v3_custom_channels',
-        FAVORITES: 'sportstream_v3_favorites',
-        VOLUME: 'sportstream_v3_volume',
-        LAST_CHANNEL: 'sportstream_v3_last_channel',
+        CUSTOM_CHANNELS: 'sportstream_v5_custom_channels',
+        FAVORITES: 'sportstream_v5_favorites',
+        VOLUME: 'sportstream_v5_volume',
+        LAST_CHANNEL: 'sportstream_v5_last_channel',
+        PROXY_TEMPLATE: 'sportstream_v5_proxy_template',
       };
 
       const DEFAULT_CHANNELS = [
         {
           id: 'ch-hls-test-1',
-          name: 'SportStream Test HD',
+          name: 'SportStream ',
           category: 'กีฬา',
           url: 'https://edge-2.m-fixer.net:8092/stream/ais/3hd/master.m3u8',
           logo: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop',
           isCustom: false,
         },
         {
-          id: 'ch-hls-test-2',
-          name: 'Arena Multi-Bitrate Live',
-          category: 'กีฬา',
-          desc: 'ทดสอบสลับบิตเรตอัตโนมัติบนเครือข่ายมือถือ',
+          id: 'ch-mp4-test-1',
+          name: 'Direct MP4',
+          category: 'ไฟล์วิดีโอ',
           url: 'https://cdn1.amazaa.live/db24h/ch3hd/playlist.m3u8',
-          referrer:'www.dooball24h.com',
+          referrer:'www.dooball24.com',
+          logo: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=160&h=160&fit=crop',
+          isCustom: false,
+        },
+        {
+          id: 'ch-hls-test-2',
+          name: 'Arena Multi-Bitrate Live (.m3u8)',
+          category: 'กีฬา',
+          url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
           logo: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=160&h=160&fit=crop',
           isCustom: false,
         },
         {
           id: 'ch-news-test-1',
-          name: 'World & Sports News 24/7',
+          name: 'World & Sports',
           category: 'ข่าว',
-          desc: 'เกาะติดข่าวกีฬาระดับโลกและบทวิเคราะห์สด',
-          url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8',
+          url: 'https://s.okwin321.ai/rs/7348/index.m3u8',
           logo: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=160&h=160&fit=crop',
           isCustom: false,
         },
@@ -589,23 +650,13 @@
           id: 'ch-tv-test-1',
           name: 'Digital TV Highlights',
           category: 'ทีวีดิจิทัล',
-          desc: 'รวมไฮไลต์รายการสดและวาไรตี้ยอดนิยม',
-          url: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8',
+          url: 'https://idooxtream.streaming-fast.com/xtream/WISEPLAY/live/atmflix/index.php?c=truefilm1',
           logo: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=160&h=160&fit=crop',
-          isCustom: false,
-        },
-        {
-          id: 'ch-ent-test-1',
-          name: 'Cinema & Showtime Stream',
-          category: 'บันเทิง',
-          desc: 'รับชมคอนเทนต์ภาพยนตร์และซีรีส์สตรีมต่อเนื่อง',
-          url: 'https://playertest.longtailvideo.com/adaptive/oceans/oceans.m3u8',
-          logo: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=160&h=160&fit=crop',
           isCustom: false,
         },
       ];
 
-      const CATEGORIES = ['ทั้งหมด', 'รายการโปรด', 'กีฬา', 'ทีวีดิจิทัล', 'ข่าว', 'บันเทิง'];
+      const CATEGORIES = ['ทั้งหมด', 'รายการโปรด', 'กีฬา', 'ทีวีดิจิทัล', 'ข่าว', 'บันเทิง', 'ไฟล์วิดีโอ'];
 
       const state = {
         channels: [...DEFAULT_CHANNELS],
@@ -613,6 +664,7 @@
         activeCategory: 'ทั้งหมด',
         searchQuery: '',
         currentChannelId: DEFAULT_CHANNELS[0].id,
+        proxyTemplate: '',
         volume: 1.0,
         isMuted: false,
         isCssFullscreen: false,
@@ -662,7 +714,7 @@
         currentChannelLogo: document.getElementById('currentChannelLogo'),
         detailChannelName: document.getElementById('detailChannelName'),
         detailCategoryBadge: document.getElementById('detailCategoryBadge'),
-        detailChannelDesc: document.getElementById('detailChannelDesc'),
+        detailChannelUrlText: document.getElementById('detailChannelUrlText'),
         favCurrentBtn: document.getElementById('favCurrentBtn'),
         favStarIcon: document.getElementById('favStarIcon'),
         searchInput: document.getElementById('searchInput'),
@@ -680,6 +732,13 @@
         streamCategoryInput: document.getElementById('streamCategoryInput'),
         streamLogoInput: document.getElementById('streamLogoInput'),
         streamRefererInput: document.getElementById('streamRefererInput'),
+        streamUseProxyInput: document.getElementById('streamUseProxyInput'),
+        openProxySettingsBtn: document.getElementById('openProxySettingsBtn'),
+        proxyModal: document.getElementById('proxyModal'),
+        closeProxyModalBtn: document.getElementById('closeProxyModalBtn'),
+        cancelProxyModalBtn: document.getElementById('cancelProxyModalBtn'),
+        proxyTemplateInput: document.getElementById('proxyTemplateInput'),
+        saveProxyBtn: document.getElementById('saveProxyBtn'),
         toast: document.getElementById('toast'),
       };
 
@@ -695,6 +754,15 @@
         try {
           window.localStorage.setItem(key, value);
         } catch (_) {}
+      }
+
+      function normalizeMediaUrl(raw) {
+        let u = String(raw || '').trim();
+        if (!u) return '';
+        if (!/^https?:\/\//i.test(u) && !u.startsWith('blob:') && !u.startsWith('data:')) {
+          u = 'http://' + u.replace(/^\/+/, '');
+        }
+        return u;
       }
 
       function showToast(msg) {
@@ -718,7 +786,10 @@
             if (Array.isArray(parsed)) {
               customChannels = parsed
                 .filter((c) => c && c.url && c.name)
-                .map((c) => ({ ...c, isCustom: true }));
+                .map((c) => {
+                  const { desc, ...clean } = c;
+                  return { ...clean, url: normalizeMediaUrl(clean.url), isCustom: true };
+                });
             }
           } catch (_) {}
         }
@@ -731,6 +802,11 @@
             const arr = JSON.parse(rawFav);
             if (Array.isArray(arr)) state.favorites = new Set(arr);
           } catch (_) {}
+        }
+
+        const rawProxy = safeGetStorage(STORAGE_KEYS.PROXY_TEMPLATE);
+        if (rawProxy) {
+          state.proxyTemplate = rawProxy;
         }
 
         const rawVol = safeGetStorage(STORAGE_KEYS.VOLUME);
@@ -754,12 +830,33 @@
       function saveCustomChannels() {
         const customOnly = state.channels
           .filter((c) => c.isCustom)
-          .map(({ isCustom, ...rest }) => rest);
+          .map(({ isCustom, desc, ...rest }) => rest);
         safeSetStorage(STORAGE_KEYS.CUSTOM_CHANNELS, JSON.stringify(customOnly));
       }
 
       function saveFavorites() {
         safeSetStorage(STORAGE_KEYS.FAVORITES, JSON.stringify([...state.favorites]));
+      }
+
+      function resolvePlaybackUrl(channel) {
+        const rawUrl = normalizeMediaUrl(channel.url);
+        const referer = String(channel.referer || '').trim();
+        if (!channel.useProxy || !state.proxyTemplate) {
+          return rawUrl;
+        }
+
+        const encodedUrl = encodeURIComponent(rawUrl);
+        const encodedRef = encodeURIComponent(referer);
+        const tpl = state.proxyTemplate.trim();
+
+        if (tpl.includes('{url}') || tpl.includes('{referer}')) {
+          return tpl
+            .replace(/\{url\}/g, encodedUrl)
+            .replace(/\{referer\}/g, encodedRef);
+        }
+
+        const sep = tpl.includes('?') ? '&' : '?';
+        return `${tpl}${sep}url=${encodedUrl}${referer ? `&referer=${encodedRef}` : ''}`;
       }
 
       function applyVolumeToVideo(forceUnmute = false) {
@@ -862,12 +959,17 @@
           toggleStageCollapse(false);
         }
 
+        const rawUrl = normalizeMediaUrl(channel.url);
+        const metaParts = [channel.category];
+        if (channel.referer) metaParts.push(`Referer: ${channel.referer}`);
+        if (channel.useProxy && state.proxyTemplate) metaParts.push('Proxy');
+
         el.nowPlayingTitle.textContent = channel.name;
-        el.nowPlayingSub.textContent = `${channel.category}${channel.referer ? ` • Referer: ${channel.referer}` : ' • สตรีมสดพร้อมเสียง'}`;
-        el.currentChannelLogo.src = channel.logo || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop';
+        el.nowPlayingSub.textContent = metaParts.join(' • ');
+        el.currentChannelLogo.src = channel.logo ? normalizeMediaUrl(channel.logo) : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop';
         el.detailChannelName.textContent = channel.name;
         el.detailCategoryBadge.textContent = channel.category;
-        el.detailChannelDesc.textContent = channel.desc || channel.url;
+        el.detailChannelUrlText.textContent = channel.referer ? `${rawUrl}  [Referer: ${channel.referer}]` : rawUrl;
 
         updateFavButtonUI();
         renderChannelList();
@@ -886,8 +988,9 @@
         el.video.removeAttribute('muted');
         applyVolumeToVideo(true);
 
-        const url = String(channel.url || '').trim();
-        const isHls = url.toLowerCase().includes('.m3u8') || url.toLowerCase().includes('m3u8');
+        const targetUrl = resolvePlaybackUrl(channel);
+        const lower = rawUrl.toLowerCase();
+        const isHls = lower.includes('.m3u8') || lower.includes('m3u8');
 
         if (isHls && window.Hls && typeof window.Hls.isSupported === 'function' && window.Hls.isSupported()) {
           try {
@@ -897,7 +1000,7 @@
               backBufferLength: 60,
             });
 
-            hlsInstance.loadSource(url);
+            hlsInstance.loadSource(targetUrl);
             hlsInstance.attachMedia(el.video);
 
             hlsInstance.on(window.Hls.Events.MANIFEST_PARSED, (_, data) => {
@@ -923,12 +1026,12 @@
                 el.loadingSpinner.classList.add('hidden');
                 el.loadingSpinner.classList.remove('flex');
                 if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR) {
-                  showStreamError('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่ายหรือลิงก์สตรีมไม่ตอบสนอง');
+                  showStreamError('โหลดสตรีมไม่สำเร็จ (อาจติด http บนหน้า https, CORS, Referer หรือ Proxy)');
                 } else if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) {
                   try {
                     hlsInstance.recoverMediaError();
                   } catch (_) {
-                    showStreamError('ไม่สามารถถอดรหัสวิดีโอหรือเสียงของสตรีมนี้ได้');
+                    showStreamError('ไม่สามารถถอดรหัสไฟล์หรือสตรีมนี้ได้');
                   }
                 } else {
                   showStreamError('ไม่สามารถเล่นสตรีมนี้ได้ในขณะนี้');
@@ -939,7 +1042,8 @@
           } catch (_) {}
         }
 
-        el.video.src = url;
+        el.video.removeAttribute('src');
+        el.video.src = targetUrl;
         el.video.load();
         if (autoPlay) {
           attemptUnmutedPlay();
@@ -1164,8 +1268,9 @@
 
           return (
             ch.name.toLowerCase().includes(q) ||
-            (ch.desc && ch.desc.toLowerCase().includes(q)) ||
-            ch.category.toLowerCase().includes(q)
+            (ch.url && ch.url.toLowerCase().includes(q)) ||
+            ch.category.toLowerCase().includes(q) ||
+            (ch.referer && ch.referer.toLowerCase().includes(q))
           );
         });
       }
@@ -1200,7 +1305,7 @@
           left.className = 'flex items-center gap-3 min-w-0 flex-1';
 
           const logo = document.createElement('img');
-          logo.src = ch.logo || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop';
+          logo.src = ch.logo ? normalizeMediaUrl(ch.logo) : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop';
           logo.alt = ch.name;
           logo.className = 'w-12 h-12 rounded-xl object-cover bg-obsidian border border-slate-700/70 shrink-0';
           logo.loading = 'lazy';
@@ -1226,7 +1331,8 @@
 
           const meta = document.createElement('div');
           meta.className = 'flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5 truncate';
-          meta.innerHTML = `<span class="text-sky-400 font-semibold">${ch.category}</span><span>•</span><span class="truncate">${ch.desc || ch.url}</span>`;
+          const refLabel = ch.referer ? ` • Ref: ${ch.referer}` : '';
+          meta.innerHTML = `<span class="text-sky-400 font-semibold">${ch.category}</span><span>•</span><span class="truncate">${ch.url}${refLabel}</span>`;
 
           info.appendChild(titleRow);
           info.appendChild(meta);
@@ -1405,7 +1511,7 @@
         el.video?.addEventListener('error', () => {
           el.loadingSpinner.classList.add('hidden');
           el.loadingSpinner.classList.remove('flex');
-          showStreamError('ไม่สามารถโหลดไฟล์สตรีมได้ กรุณาตรวจสอบลิงก์หรือเครือข่าย');
+          showStreamError('ไม่สามารถโหลดไฟล์หรือสตรีมนี้ได้ (หากเป็น http บนหน้า https อาจติด Mixed Content)');
         });
 
         el.favCurrentBtn?.addEventListener('click', () => {
@@ -1455,13 +1561,41 @@
           if (e.target === el.addStreamModal) closeModal();
         });
 
+        el.openProxySettingsBtn?.addEventListener('click', () => {
+          if (el.proxyTemplateInput) {
+            el.proxyTemplateInput.value = state.proxyTemplate || '';
+          }
+          el.proxyModal?.classList.remove('hidden');
+          el.proxyModal?.classList.add('flex');
+        });
+
+        const closeProxyModal = () => {
+          el.proxyModal?.classList.add('hidden');
+          el.proxyModal?.classList.remove('flex');
+        };
+
+        el.closeProxyModalBtn?.addEventListener('click', closeProxyModal);
+        el.cancelProxyModalBtn?.addEventListener('click', closeProxyModal);
+        el.proxyModal?.addEventListener('click', (e) => {
+          if (e.target === el.proxyModal) closeProxyModal();
+        });
+
+        el.saveProxyBtn?.addEventListener('click', () => {
+          state.proxyTemplate = (el.proxyTemplateInput?.value || '').trim();
+          safeSetStorage(STORAGE_KEYS.PROXY_TEMPLATE, state.proxyTemplate);
+          closeProxyModal();
+          showToast(state.proxyTemplate ? 'บันทึก Proxy URL แล้ว' : 'ล้างค่า Proxy URL แล้ว');
+        });
+
         el.addStreamForm?.addEventListener('submit', (e) => {
           e.preventDefault();
           const name = (el.streamNameInput?.value || '').trim();
-          const url = (el.streamUrlInput?.value || '').trim();
+          const url = normalizeMediaUrl(el.streamUrlInput?.value || '');
           const category = el.streamCategoryInput?.value || 'กีฬา';
-          const logo = (el.streamLogoInput?.value || '').trim() || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop';
+          const logoRaw = (el.streamLogoInput?.value || '').trim();
+          const logo = logoRaw ? normalizeMediaUrl(logoRaw) : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop';
           const referer = (el.streamRefererInput?.value || '').trim();
+          const useProxy = Boolean(el.streamUseProxyInput?.checked);
 
           if (!name || !url) return;
 
@@ -1472,7 +1606,7 @@
             category,
             logo,
             referer,
-            desc: referer ? `ลิงก์สตรีมที่เพิ่มเอง • Referer: ${referer}` : 'ลิงก์สตรีมที่เพิ่มเอง',
+            useProxy,
             isCustom: true,
           };
 
