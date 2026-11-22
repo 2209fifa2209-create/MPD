@@ -524,9 +524,10 @@
               id="streamCategoryInput"
               class="w-full px-3 py-2.5 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-sm text-white outline-none"
             >
-              <option value="กีฬา">กีฬา</option>
               <option value="ทีวีดิจิทัล">ทีวีดิจิทัล</option>
-              <option value="ข่าว">ข่าว</option>
+              <option value="กีฬา">กีฬา</option>
+              <option value="สารคดี">สารคดี</option>
+              <option value="aisplay">aisplay</option>
               <option value="บันเทิง">บันเทิง</option>
               <option value="ไฟล์วิดีโอ">ไฟล์วิดีโอ</option>
             </select>
@@ -614,20 +615,27 @@
 
       const DEFAULT_CHANNELS = [
         {
-          id: 'ch-hls-test-1',
-          name: 'SportStream ',
-          category: 'กีฬา',
+          id: 'ch3',
+          name: 'CH3',
+          category: 'ดิจิตอล',
           url: 'https://edge-2.m-fixer.net:8092/stream/ais/3hd/master.m3u8',
-          logo: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop',
+          logo: 'https://www.fileinw.com/postor/20240418191821ch3hd.jpg',
           isCustom: false,
         },
         {
-          id: 'ch-mp4-test-1',
-          name: 'Direct MP4',
+          id: 'ch5',
+          name: 'CH5',
+          category: 'ดิจิตอล',
+          url: 'https://edge-2.m-fixer.net:8092/stream/ais/ch5/master.m3u8',
+          logo: 'https://www.fileinw.com/postor/20240418185850ch5hd.jpg',
+          isCustom: false,
+        },
+        {
+          id: 'ch7',
+          name: 'CH7',
           category: 'ไฟล์วิดีโอ',
-          url: 'https://cdn1.amazaa.live/db24h/ch3hd/playlist.m3u8',
-          referrer:'www.dooball24.com',
-          logo: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=160&h=160&fit=crop',
+          url: 'https://edge-2.m-fixer.net:8092/stream/ais/ch7hd/master.m3u8',
+          logo: 'https://www.fileinw.com/postor/20240418185909ch7hd.jpg',
           isCustom: false,
         },
         {
