@@ -10,23 +10,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Noto Sans Thai"', 'system-ui', '-apple-system', 'sans-serif'],
-          },
-          colors: {
-            obsidian: '#070b12',
-            surface: '#0e1522',
-            card: '#141e30',
-            emeraldBrand: '#10b981',
-            skyBrand: '#0ea5e9',
+    if (window.tailwind) {
+      window.tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Noto Sans Thai"', 'system-ui', '-apple-system', 'sans-serif'],
+            },
+            colors: {
+              obsidian: '#070b12',
+              surface: '#0e1522',
+              card: '#141e30',
+              emeraldBrand: '#10b981',
+              skyBrand: '#0ea5e9',
+            },
           },
         },
-      },
-    };
+      };
+    }
   </script>
   <style>
     * {
@@ -41,6 +43,7 @@
       overscroll-behavior-y: none;
       margin: 0;
       padding: 0;
+      min-height: 100vh;
     }
 
     .no-scrollbar::-webkit-scrollbar {
@@ -100,6 +103,7 @@
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
+      min-height: 220px;
       max-height: 56vh;
       background: #000000;
       overflow: hidden;
@@ -172,7 +176,6 @@
   <!-- Top Header -->
   <header id="appHeader" class="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-slate-800/80 px-3 sm:px-5 py-2.5">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
-      <!-- Brand -->
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
           <svg class="w-5 h-5 text-slate-950" viewBox="0 0 24 24" fill="currentColor">
@@ -191,7 +194,6 @@
         </div>
       </div>
 
-      <!-- Header Actions -->
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <button
           id="toggleMiniBarBtn"
@@ -230,3 +232,1276 @@
         <div id="playerStage" class="group">
           <video
             id="videoEl"
+            playsinline
+            webkit-playsinline
+            x5-playsinline
+            preload="auto"
+          ></video>
+
+          <!-- Top Floating Bar -->
+          <div id="topOverlay" class="player-overlay absolute top-0 inset-x-0 p-2.5 sm:p-3.5 bg-gradient-to-b from-black/85 via-black/40 to-transparent flex items-center justify-between gap-2 z-20">
+            <div class="flex items-center gap-2 min-w-0">
+              <button
+                id="overlayFullscreenBtn"
+                type="button"
+                class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/65 hover:bg-black/85 text-white border border-white/15 flex items-center justify-center active:scale-95 transition shrink-0"
+                title="ขยายเต็มจอ / ย่อจอ"
+              >
+                <svg id="expandSvg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+                <svg id="compressSvg" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+                </svg>
+              </button>
+
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span id="liveBadge" class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-600 text-white tracking-wider uppercase shrink-0">LIVE</span>
+                  <h2 id="nowPlayingTitle" class="text-xs sm:text-sm font-bold text-white truncate">กำลังเตรียมช่องรายการ...</h2>
+                </div>
+                <p id="nowPlayingSub" class="text-[11px] text-slate-300/90 truncate">หมวดหมู่ • ความละเอียดอัตโนมัติ</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button
+                id="rotateLandscapeBtn"
+                type="button"
+                class="px-2.5 py-2 rounded-xl bg-black/65 hover:bg-black/85 text-slate-100 border border-white/15 text-[11px] font-semibold active:scale-95 transition flex items-center gap-1"
+                title="หมุนหน้าจอแนวนอน"
+              >
+                <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span class="hidden sm:inline">แนวนอน</span>
+              </button>
+
+              <button
+                id="toggleHudBtn"
+                type="button"
+                class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/65 hover:bg-black/85 text-slate-200 border border-white/15 flex items-center justify-center active:scale-95 transition"
+                title="ซ่อนปุ่มควบคุม"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Center Tap-to-Unmute / Status Overlay -->
+          <div id="centerStatusOverlay" class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10 pointer-events-none">
+            <div id="loadingSpinner" class="hidden flex-col items-center gap-2 bg-black/75 backdrop-blur-sm px-4 py-3 rounded-2xl border border-white/10">
+              <div class="w-8 h-8 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+              <span class="text-xs font-medium text-slate-200">กำลังเชื่อมต่อสตรีม...</span>
+            </div>
+
+            <button
+              id="unmutePromptBtn"
+              type="button"
+              class="hidden pointer-events-auto px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-2xl shadow-emerald-500/40 active:scale-95 transition flex items-center gap-2.5"
+            >
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+              <span>แตะเพื่อเริ่มเล่นพร้อมเสียง</span>
+            </button>
+
+            <div id="errorBox" class="hidden pointer-events-auto max-w-md bg-slate-950/90 backdrop-blur-md border border-rose-500/40 rounded-2xl p-4 shadow-2xl">
+              <p class="text-sm font-bold text-rose-400 mb-1">ไม่สามารถเล่นสตรีมนี้ได้</p>
+              <p id="errorMessage" class="text-xs text-slate-300 mb-3 leading-relaxed">ลิงก์อาจหมดอายุ ติดข้อจำกัด CORS หรือต้องการ HTTP Referer เฉพาะ</p>
+              <div class="flex items-center justify-center gap-2">
+                <button id="retryStreamBtn" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
+                  ลองใหม่อีกครั้ง
+                </button>
+                <button id="nextChannelBtn" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+                  เปลี่ยนช่องถัดไป
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Control Bar -->
+          <div id="bottomOverlay" class="player-overlay absolute bottom-0 inset-x-0 p-2.5 sm:p-3.5 bg-gradient-to-t from-black/90 via-black/55 to-transparent flex items-center justify-between gap-2 z-20">
+            <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <button
+                id="playPauseBtn"
+                type="button"
+                class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center active:scale-95 transition shrink-0"
+                title="เล่น / หยุดชั่วคราว"
+              >
+                <svg id="playIcon" class="w-5 h-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5.14v14l11-7-11-7z" />
+                </svg>
+                <svg id="pauseIcon" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 5h4v14H6zm8 0h4v14h-4z" />
+                </svg>
+              </button>
+
+              <div class="flex items-center gap-1.5 bg-black/55 border border-white/10 rounded-xl px-2 py-1.5">
+                <button
+                  id="muteBtn"
+                  type="button"
+                  class="text-emerald-400 hover:text-emerald-300 flex items-center justify-center active:scale-95 transition"
+                  title="เปิด / ปิดเสียง"
+                >
+                  <svg id="volHighIcon" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  </svg>
+                  <svg id="volMutedIcon" class="w-5 h-5 text-rose-400 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                  </svg>
+                </button>
+                <input
+                  id="volumeSlider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="100"
+                  class="vol-slider w-16 sm:w-24"
+                  aria-label="ระดับเสียง"
+                />
+                <span id="volumeLabel" class="text-[11px] font-bold text-emerald-400 w-8 text-right tabular-nums">100%</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <select
+                id="qualitySelect"
+                class="bg-black/70 hover:bg-black/90 text-slate-100 border border-white/15 rounded-xl px-2 py-2 text-xs font-semibold outline-none cursor-pointer"
+                title="เลือกความละเอียด"
+              >
+                <option value="-1">Auto</option>
+              </select>
+
+              <button
+                id="bottomFullscreenBtn"
+                type="button"
+                class="px-2.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/15 text-xs font-bold active:scale-95 transition flex items-center gap-1"
+                title="ขยายเต็มจอ"
+              >
+                <span id="fullscreenBtnText">เต็มจอ</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Channel Info Strip below Player -->
+        <div class="p-3.5 sm:p-4 flex items-center justify-between gap-3 bg-surface">
+          <div class="flex items-center gap-3 min-w-0">
+            <img
+              id="currentChannelLogo"
+              src=""
+              alt="Channel Logo"
+              class="w-11 h-11 rounded-xl object-cover bg-card border border-slate-700/80 shrink-0"
+            />
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <h1 id="detailChannelName" class="font-bold text-sm sm:text-base text-white truncate">ชื่อช่อง</h1>
+                <span id="detailCategoryBadge" class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/25 shrink-0">หมวดหมู่</span>
+              </div>
+              <p id="detailChannelDesc" class="text-xs text-slate-400 truncate mt-0.5">รายละเอียดรายการสด</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button
+              id="favCurrentBtn"
+              type="button"
+              class="w-10 h-10 rounded-xl bg-card hover:bg-slate-700/80 border border-slate-700/80 flex items-center justify-center active:scale-95 transition"
+              title="เพิ่มในรายการโปรด"
+            >
+              <svg id="favStarIcon" class="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Channel List & Filter Column -->
+    <section class="lg:col-span-5 xl:col-span-4 flex flex-col p-3 sm:p-4 lg:p-0 gap-3">
+      <div class="relative">
+        <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="ค้นหาช่องกีฬา, ทีวี, ข่าว หรือลิงก์ที่เพิ่มเอง..."
+          class="w-full pl-10 pr-9 py-2.5 rounded-xl bg-surface border border-slate-800 focus:border-emerald-500 text-sm text-white placeholder-slate-400 outline-none transition"
+        />
+        <button
+          id="clearSearchBtn"
+          type="button"
+          class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+          title="ล้างคำค้นหา"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div id="categoryTabs" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
+
+      <div id="channelList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5 custom-scroll"></div>
+
+      <div id="emptyState" class="hidden text-center py-10 px-4 bg-surface rounded-2xl border border-slate-800/80">
+        <p class="text-sm font-semibold text-slate-300">ไม่พบช่องรายการที่ตรงกับตัวกรอง</p>
+        <p class="text-xs text-slate-500 mt-1">ลองเปลี่ยนหมวดหมู่ ค้นหาคำอื่น หรือกดปุ่ม "เพิ่มลิงก์" เพื่อเพิ่มสตรีมของคุณเอง</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add Custom Stream Modal -->
+  <div id="addStreamModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="bg-surface border border-slate-700/90 rounded-2xl w-full max-w-md p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-base text-white">เพิ่มลิงก์สตรีม (.m3u8)</h3>
+        <button id="closeModalBtn" type="button" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+      </div>
+
+      <form id="addStreamForm" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">ชื่อช่องรายการ *</label>
+          <input
+            id="streamNameInput"
+            type="text"
+            required
+            placeholder="เช่น สนามกีฬาสด HD, ช่องข่าวกีฬา"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-sm text-white outline-none"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">ลิงก์สตรีม (.m3u8 / http / https) *</label>
+          <input
+            id="streamUrlInput"
+            type="url"
+            required
+            placeholder="https://example.com/live/stream.m3u8"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-sm text-white outline-none"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">หมวดหมู่</label>
+            <select
+              id="streamCategoryInput"
+              class="w-full px-3 py-2.5 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-sm text-white outline-none"
+            >
+              <option value="กีฬา">กีฬา</option>
+              <option value="ทีวีดิจิทัล">ทีวีดิจิทัล</option>
+              <option value="ข่าว">ข่าว</option>
+              <option value="บันเทิง">บันเทิง</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">ลิงก์โลโก้ (ไม่บังคับ)</label>
+            <input
+              id="streamLogoInput"
+              type="url"
+              placeholder="https://..."
+              class="w-full px-3 py-2.5 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-sm text-white outline-none"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Custom HTTP Referer (บันทึกเก็บไว้เป็นข้อมูล)</label>
+          <input
+            id="streamRefererInput"
+            type="text"
+            placeholder="https://source-site.com/"
+            class="w-full px-3.5 py-2 rounded-xl bg-card border border-slate-700 focus:border-emerald-500 text-xs text-white outline-none"
+          />
+          <p class="text-[11px] text-amber-300/90 mt-1.5 leading-relaxed">
+            หมายเหตุ: เบราว์เซอร์ทั่วไปไม่อนุญาตให้ JavaScript แก้ไข header <code class="text-emerald-300">Referer</code> โดยตรง หากสตรีมต้นทางบล็อก cross-origin หรือบังคับ Referer ฝั่งเซิร์ฟเวอร์ แนะนำให้รันผ่าน Proxy หรือแอป Native/WebView ที่ตั้งค่า header ได้ครับ
+          </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button
+            id="cancelModalBtn"
+            type="button"
+            class="px-4 py-2 rounded-xl text-xs font-semibold bg-card hover:bg-slate-700 text-slate-300 transition"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition"
+          >
+            บันทึกและเล่นทันที
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[10000] px-4 py-2 rounded-full bg-slate-900/95 text-white text-xs font-semibold border border-slate-700 shadow-2xl opacity-0 pointer-events-none transition-opacity duration-200">
+    แจ้งเตือน
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEYS = {
+        CUSTOM_CHANNELS: 'sportstream_v3_custom_channels',
+        FAVORITES: 'sportstream_v3_favorites',
+        VOLUME: 'sportstream_v3_volume',
+        LAST_CHANNEL: 'sportstream_v3_last_channel',
+      };
+
+      const DEFAULT_CHANNELS = [
+        {
+          id: 'ch-hls-test-1',
+          name: 'SportStream Test HD (Big Buck Bunny)',
+          category: 'กีฬา',
+          desc: 'สตรีมทดสอบ HLS (.m3u8) ความเสถียรสูง พร้อมเสียงเต็ม',
+          url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+          logo: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop',
+          isCustom: false,
+        },
+        {
+          id: 'ch-hls-test-2',
+          name: 'Arena Multi-Bitrate Live',
+          category: 'กีฬา',
+          desc: 'ทดสอบสลับบิตเรตอัตโนมัติบนเครือข่ายมือถือ',
+          url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
+          logo: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=160&h=160&fit=crop',
+          isCustom: false,
+        },
+        {
+          id: 'ch-news-test-1',
+          name: 'World & Sports News 24/7',
+          category: 'ข่าว',
+          desc: 'เกาะติดข่าวกีฬาระดับโลกและบทวิเคราะห์สด',
+          url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8',
+          logo: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=160&h=160&fit=crop',
+          isCustom: false,
+        },
+        {
+          id: 'ch-tv-test-1',
+          name: 'Digital TV Highlights',
+          category: 'ทีวีดิจิทัล',
+          desc: 'รวมไฮไลต์รายการสดและวาไรตี้ยอดนิยม',
+          url: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8',
+          logo: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=160&h=160&fit=crop',
+          isCustom: false,
+        },
+        {
+          id: 'ch-ent-test-1',
+          name: 'Cinema & Showtime Stream',
+          category: 'บันเทิง',
+          desc: 'รับชมคอนเทนต์ภาพยนตร์และซีรีส์สตรีมต่อเนื่อง',
+          url: 'https://playertest.longtailvideo.com/adaptive/oceans/oceans.m3u8',
+          logo: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=160&h=160&fit=crop',
+          isCustom: false,
+        },
+      ];
+
+      const CATEGORIES = ['ทั้งหมด', 'รายการโปรด', 'กีฬา', 'ทีวีดิจิทัล', 'ข่าว', 'บันเทิง'];
+
+      const state = {
+        channels: [...DEFAULT_CHANNELS],
+        favorites: new Set(),
+        activeCategory: 'ทั้งหมด',
+        searchQuery: '',
+        currentChannelId: DEFAULT_CHANNELS[0].id,
+        volume: 1.0,
+        isMuted: false,
+        isCssFullscreen: false,
+        isRotatedLandscape: false,
+        isHudHidden: false,
+        isStageCollapsed: false,
+      };
+
+      let hlsInstance = null;
+      let hudAutoHideTimer = null;
+      let lastTapTime = 0;
+
+      const el = {
+        video: document.getElementById('videoEl'),
+        playerStage: document.getElementById('playerStage'),
+        playerSection: document.getElementById('playerSection'),
+        appHeader: document.getElementById('appHeader'),
+        topOverlay: document.getElementById('topOverlay'),
+        bottomOverlay: document.getElementById('bottomOverlay'),
+        loadingSpinner: document.getElementById('loadingSpinner'),
+        unmutePromptBtn: document.getElementById('unmutePromptBtn'),
+        errorBox: document.getElementById('errorBox'),
+        errorMessage: document.getElementById('errorMessage'),
+        retryStreamBtn: document.getElementById('retryStreamBtn'),
+        nextChannelBtn: document.getElementById('nextChannelBtn'),
+        playPauseBtn: document.getElementById('playPauseBtn'),
+        playIcon: document.getElementById('playIcon'),
+        pauseIcon: document.getElementById('pauseIcon'),
+        muteBtn: document.getElementById('muteBtn'),
+        volHighIcon: document.getElementById('volHighIcon'),
+        volMutedIcon: document.getElementById('volMutedIcon'),
+        volumeSlider: document.getElementById('volumeSlider'),
+        volumeLabel: document.getElementById('volumeLabel'),
+        qualitySelect: document.getElementById('qualitySelect'),
+        overlayFullscreenBtn: document.getElementById('overlayFullscreenBtn'),
+        bottomFullscreenBtn: document.getElementById('bottomFullscreenBtn'),
+        fullscreenBtnText: document.getElementById('fullscreenBtnText'),
+        expandSvg: document.getElementById('expandSvg'),
+        compressSvg: document.getElementById('compressSvg'),
+        rotateLandscapeBtn: document.getElementById('rotateLandscapeBtn'),
+        toggleHudBtn: document.getElementById('toggleHudBtn'),
+        toggleMiniBarBtn: document.getElementById('toggleMiniBarBtn'),
+        toggleMiniLabel: document.getElementById('toggleMiniLabel'),
+        toggleMiniIcon: document.getElementById('toggleMiniIcon'),
+        nowPlayingTitle: document.getElementById('nowPlayingTitle'),
+        nowPlayingSub: document.getElementById('nowPlayingSub'),
+        currentChannelLogo: document.getElementById('currentChannelLogo'),
+        detailChannelName: document.getElementById('detailChannelName'),
+        detailCategoryBadge: document.getElementById('detailCategoryBadge'),
+        detailChannelDesc: document.getElementById('detailChannelDesc'),
+        favCurrentBtn: document.getElementById('favCurrentBtn'),
+        favStarIcon: document.getElementById('favStarIcon'),
+        searchInput: document.getElementById('searchInput'),
+        clearSearchBtn: document.getElementById('clearSearchBtn'),
+        categoryTabs: document.getElementById('categoryTabs'),
+        channelList: document.getElementById('channelList'),
+        emptyState: document.getElementById('emptyState'),
+        openAddStreamBtn: document.getElementById('openAddStreamBtn'),
+        addStreamModal: document.getElementById('addStreamModal'),
+        closeModalBtn: document.getElementById('closeModalBtn'),
+        cancelModalBtn: document.getElementById('cancelModalBtn'),
+        addStreamForm: document.getElementById('addStreamForm'),
+        streamNameInput: document.getElementById('streamNameInput'),
+        streamUrlInput: document.getElementById('streamUrlInput'),
+        streamCategoryInput: document.getElementById('streamCategoryInput'),
+        streamLogoInput: document.getElementById('streamLogoInput'),
+        streamRefererInput: document.getElementById('streamRefererInput'),
+        toast: document.getElementById('toast'),
+      };
+
+      function safeGetStorage(key) {
+        try {
+          return window.localStorage.getItem(key);
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function safeSetStorage(key, value) {
+        try {
+          window.localStorage.setItem(key, value);
+        } catch (_) {}
+      }
+
+      function showToast(msg) {
+        if (!el.toast) return;
+        el.toast.textContent = msg;
+        el.toast.classList.remove('opacity-0');
+        el.toast.classList.add('opacity-100');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => {
+          el.toast.classList.remove('opacity-100');
+          el.toast.classList.add('opacity-0');
+        }, 2400);
+      }
+
+      function loadStorage() {
+        let customChannels = [];
+        const rawCustom = safeGetStorage(STORAGE_KEYS.CUSTOM_CHANNELS);
+        if (rawCustom) {
+          try {
+            const parsed = JSON.parse(rawCustom);
+            if (Array.isArray(parsed)) {
+              customChannels = parsed
+                .filter((c) => c && c.url && c.name)
+                .map((c) => ({ ...c, isCustom: true }));
+            }
+          } catch (_) {}
+        }
+
+        state.channels = [...customChannels, ...DEFAULT_CHANNELS];
+
+        const rawFav = safeGetStorage(STORAGE_KEYS.FAVORITES);
+        if (rawFav) {
+          try {
+            const arr = JSON.parse(rawFav);
+            if (Array.isArray(arr)) state.favorites = new Set(arr);
+          } catch (_) {}
+        }
+
+        const rawVol = safeGetStorage(STORAGE_KEYS.VOLUME);
+        if (rawVol !== null) {
+          const parsedVol = parseFloat(rawVol);
+          if (!Number.isNaN(parsedVol) && parsedVol >= 0 && parsedVol <= 1) {
+            state.volume = parsedVol > 0 ? parsedVol : 1.0;
+          }
+        }
+
+        state.isMuted = false;
+
+        const lastId = safeGetStorage(STORAGE_KEYS.LAST_CHANNEL);
+        if (lastId && state.channels.some((c) => c.id === lastId)) {
+          state.currentChannelId = lastId;
+        } else {
+          state.currentChannelId = state.channels[0]?.id || null;
+        }
+      }
+
+      function saveCustomChannels() {
+        const customOnly = state.channels
+          .filter((c) => c.isCustom)
+          .map(({ isCustom, ...rest }) => rest);
+        safeSetStorage(STORAGE_KEYS.CUSTOM_CHANNELS, JSON.stringify(customOnly));
+      }
+
+      function saveFavorites() {
+        safeSetStorage(STORAGE_KEYS.FAVORITES, JSON.stringify([...state.favorites]));
+      }
+
+      function applyVolumeToVideo(forceUnmute = false) {
+        if (!el.video) return;
+        if (forceUnmute) {
+          state.isMuted = false;
+          if (state.volume <= 0.05) state.volume = 1.0;
+        }
+        el.video.muted = state.isMuted;
+        el.video.volume = state.isMuted ? 0 : state.volume;
+
+        const pct = state.isMuted ? 0 : Math.round(state.volume * 100);
+        if (el.volumeSlider) el.volumeSlider.value = String(pct);
+        if (el.volumeLabel) {
+          el.volumeLabel.textContent = `${pct}%`;
+          if (state.isMuted || pct === 0) {
+            el.volumeLabel.classList.remove('text-emerald-400');
+            el.volumeLabel.classList.add('text-rose-400');
+          } else {
+            el.volumeLabel.classList.add('text-emerald-400');
+            el.volumeLabel.classList.remove('text-rose-400');
+          }
+        }
+
+        if (el.volHighIcon && el.volMutedIcon) {
+          if (state.isMuted || pct === 0) {
+            el.volHighIcon.classList.add('hidden');
+            el.volMutedIcon.classList.remove('hidden');
+          } else {
+            el.volHighIcon.classList.remove('hidden');
+            el.volMutedIcon.classList.add('hidden');
+          }
+        }
+
+        safeSetStorage(STORAGE_KEYS.VOLUME, String(state.volume));
+      }
+
+      function attemptUnmutedPlay() {
+        if (!el.video) return;
+        applyVolumeToVideo(true);
+        el.errorBox.classList.add('hidden');
+        el.loadingSpinner.classList.remove('hidden');
+        el.loadingSpinner.classList.add('flex');
+
+        try {
+          const playPromise = el.video.play();
+          if (playPromise && typeof playPromise.then === 'function') {
+            playPromise
+              .then(() => {
+                el.loadingSpinner.classList.add('hidden');
+                el.loadingSpinner.classList.remove('flex');
+                el.unmutePromptBtn.classList.add('hidden');
+                updatePlayPauseUI(true);
+              })
+              .catch(() => {
+                el.loadingSpinner.classList.add('hidden');
+                el.loadingSpinner.classList.remove('flex');
+                el.unmutePromptBtn.classList.remove('hidden');
+                updatePlayPauseUI(false);
+              });
+          } else {
+            el.loadingSpinner.classList.add('hidden');
+            el.loadingSpinner.classList.remove('flex');
+          }
+        } catch (_) {
+          el.loadingSpinner.classList.add('hidden');
+          el.loadingSpinner.classList.remove('flex');
+          el.unmutePromptBtn.classList.remove('hidden');
+        }
+      }
+
+      function setupGlobalFirstGestureUnmute() {
+        const unlockAudio = () => {
+          if (!el.video) return;
+          if (el.video.paused || el.video.muted) {
+            applyVolumeToVideo(true);
+            try {
+              const p = el.video.play();
+              if (p && typeof p.then === 'function') {
+                p.then(() => {
+                  el.unmutePromptBtn.classList.add('hidden');
+                  updatePlayPauseUI(true);
+                }).catch(() => {});
+              }
+            } catch (_) {}
+          }
+        };
+        window.addEventListener('pointerdown', unlockAudio, { once: true, passive: true });
+        window.addEventListener('keydown', unlockAudio, { once: true });
+      }
+
+      function loadChannel(channelId, autoPlay = true) {
+        const channel = state.channels.find((c) => c.id === channelId) || state.channels[0];
+        if (!channel || !el.video) return;
+
+        state.currentChannelId = channel.id;
+        safeSetStorage(STORAGE_KEYS.LAST_CHANNEL, channel.id);
+
+        if (state.isStageCollapsed) {
+          toggleStageCollapse(false);
+        }
+
+        el.nowPlayingTitle.textContent = channel.name;
+        el.nowPlayingSub.textContent = `${channel.category}${channel.referer ? ` • Referer: ${channel.referer}` : ' • สตรีมสดพร้อมเสียง'}`;
+        el.currentChannelLogo.src = channel.logo || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop';
+        el.detailChannelName.textContent = channel.name;
+        el.detailCategoryBadge.textContent = channel.category;
+        el.detailChannelDesc.textContent = channel.desc || channel.url;
+
+        updateFavButtonUI();
+        renderChannelList();
+
+        el.errorBox.classList.add('hidden');
+        el.unmutePromptBtn.classList.add('hidden');
+        el.loadingSpinner.classList.remove('hidden');
+        el.loadingSpinner.classList.add('flex');
+        el.qualitySelect.innerHTML = '<option value="-1">Auto</option>';
+
+        if (hlsInstance) {
+          try { hlsInstance.destroy(); } catch (_) {}
+          hlsInstance = null;
+        }
+
+        el.video.removeAttribute('muted');
+        applyVolumeToVideo(true);
+
+        const url = String(channel.url || '').trim();
+        const isHls = url.toLowerCase().includes('.m3u8') || url.toLowerCase().includes('m3u8');
+
+        if (isHls && window.Hls && typeof window.Hls.isSupported === 'function' && window.Hls.isSupported()) {
+          try {
+            hlsInstance = new window.Hls({
+              enableWorker: true,
+              lowLatencyMode: true,
+              backBufferLength: 60,
+            });
+
+            hlsInstance.loadSource(url);
+            hlsInstance.attachMedia(el.video);
+
+            hlsInstance.on(window.Hls.Events.MANIFEST_PARSED, (_, data) => {
+              el.qualitySelect.innerHTML = '<option value="-1">Auto</option>';
+              if (data && Array.isArray(data.levels)) {
+                data.levels.forEach((lvl, idx) => {
+                  const opt = document.createElement('option');
+                  opt.value = String(idx);
+                  opt.textContent = lvl.height ? `${lvl.height}p` : `Level ${idx + 1}`;
+                  el.qualitySelect.appendChild(opt);
+                });
+              }
+              if (autoPlay) {
+                attemptUnmutedPlay();
+              } else {
+                el.loadingSpinner.classList.add('hidden');
+                el.loadingSpinner.classList.remove('flex');
+              }
+            });
+
+            hlsInstance.on(window.Hls.Events.ERROR, (_, data) => {
+              if (data && data.fatal) {
+                el.loadingSpinner.classList.add('hidden');
+                el.loadingSpinner.classList.remove('flex');
+                if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR) {
+                  showStreamError('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่ายหรือลิงก์สตรีมไม่ตอบสนอง');
+                } else if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) {
+                  try {
+                    hlsInstance.recoverMediaError();
+                  } catch (_) {
+                    showStreamError('ไม่สามารถถอดรหัสวิดีโอหรือเสียงของสตรีมนี้ได้');
+                  }
+                } else {
+                  showStreamError('ไม่สามารถเล่นสตรีมนี้ได้ในขณะนี้');
+                }
+              }
+            });
+            return;
+          } catch (_) {}
+        }
+
+        el.video.src = url;
+        el.video.load();
+        if (autoPlay) {
+          attemptUnmutedPlay();
+        } else {
+          el.loadingSpinner.classList.add('hidden');
+          el.loadingSpinner.classList.remove('flex');
+        }
+      }
+
+      function showStreamError(message) {
+        el.errorMessage.textContent = message;
+        el.errorBox.classList.remove('hidden');
+        updatePlayPauseUI(false);
+      }
+
+      function updatePlayPauseUI(isPlaying) {
+        if (isPlaying) {
+          el.playIcon.classList.add('hidden');
+          el.pauseIcon.classList.remove('hidden');
+        } else {
+          el.playIcon.classList.remove('hidden');
+          el.pauseIcon.classList.add('hidden');
+        }
+      }
+
+      function updateFavButtonUI() {
+        const isFav = state.favorites.has(state.currentChannelId);
+        if (isFav) {
+          el.favStarIcon.setAttribute('fill', 'currentColor');
+          el.favStarIcon.classList.remove('text-slate-400');
+          el.favStarIcon.classList.add('text-amber-400');
+        } else {
+          el.favStarIcon.setAttribute('fill', 'none');
+          el.favStarIcon.classList.remove('text-amber-400');
+          el.favStarIcon.classList.add('text-slate-400');
+        }
+      }
+
+      function isAnyFullscreen() {
+        return Boolean(
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          state.isCssFullscreen
+        );
+      }
+
+      function updateFullscreenUI() {
+        const active = isAnyFullscreen();
+        if (active) {
+          el.expandSvg.classList.add('hidden');
+          el.compressSvg.classList.remove('hidden');
+          el.fullscreenBtnText.textContent = 'ย่อจอ';
+          el.appHeader.classList.add('hidden');
+        } else {
+          el.expandSvg.classList.remove('hidden');
+          el.compressSvg.classList.add('hidden');
+          el.fullscreenBtnText.textContent = 'เต็มจอ';
+          el.appHeader.classList.remove('hidden');
+          state.isRotatedLandscape = false;
+          el.playerStage.classList.remove('rotated-landscape');
+          unlockScreenOrientation();
+        }
+      }
+
+      function syncRotatedDimensions() {
+        if (!state.isRotatedLandscape) return;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        el.playerStage.style.setProperty('--stage-w', `${w}px`);
+        el.playerStage.style.setProperty('--stage-h', `${h}px`);
+      }
+
+      async function lockScreenOrientation(mode) {
+        try {
+          if (screen.orientation && typeof screen.orientation.lock === 'function') {
+            await screen.orientation.lock(mode);
+            return true;
+          }
+        } catch (_) {}
+        return false;
+      }
+
+      function unlockScreenOrientation() {
+        try {
+          if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+            screen.orientation.unlock();
+          }
+        } catch (_) {}
+      }
+
+      async function enterFullscreen() {
+        try {
+          if (el.playerStage.requestFullscreen) {
+            await el.playerStage.requestFullscreen();
+            state.isCssFullscreen = false;
+          } else if (el.playerStage.webkitRequestFullscreen) {
+            await el.playerStage.webkitRequestFullscreen();
+            state.isCssFullscreen = false;
+          } else {
+            state.isCssFullscreen = true;
+            el.playerStage.classList.add('css-fullscreen');
+          }
+        } catch (_) {
+          state.isCssFullscreen = true;
+          el.playerStage.classList.add('css-fullscreen');
+        }
+        updateFullscreenUI();
+        scheduleHudAutoHide();
+      }
+
+      async function exitFullscreen() {
+        try {
+          if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          }
+        } catch (_) {}
+        state.isCssFullscreen = false;
+        el.playerStage.classList.remove('css-fullscreen');
+        el.playerStage.classList.remove('rotated-landscape');
+        updateFullscreenUI();
+      }
+
+      async function toggleFullscreen() {
+        if (isAnyFullscreen()) {
+          await exitFullscreen();
+        } else {
+          await enterFullscreen();
+        }
+      }
+
+      async function toggleLandscapeMode() {
+        if (!isAnyFullscreen()) {
+          await enterFullscreen();
+        }
+        const lockedNative = await lockScreenOrientation('landscape');
+        if (!lockedNative) {
+          state.isRotatedLandscape = !state.isRotatedLandscape;
+          if (state.isRotatedLandscape) {
+            el.playerStage.classList.add('css-fullscreen');
+            el.playerStage.classList.add('rotated-landscape');
+            syncRotatedDimensions();
+            showToast('หมุนหน้าจอแนวนอนแล้ว');
+          } else {
+            el.playerStage.classList.remove('rotated-landscape');
+            showToast('กลับสู่แนวตั้งแล้ว');
+          }
+        } else {
+          showToast('สลับเป็นแนวนอนแล้ว');
+        }
+      }
+
+      function setHudHidden(hidden) {
+        state.isHudHidden = hidden;
+        if (hidden) {
+          el.topOverlay.classList.add('is-hidden');
+          el.bottomOverlay.classList.add('is-hidden');
+        } else {
+          el.topOverlay.classList.remove('is-hidden');
+          el.bottomOverlay.classList.remove('is-hidden');
+          scheduleHudAutoHide();
+        }
+      }
+
+      function scheduleHudAutoHide() {
+        clearTimeout(hudAutoHideTimer);
+        if (el.video && !el.video.paused && !state.isHudHidden) {
+          hudAutoHideTimer = setTimeout(() => {
+            if (el.video && !el.video.paused) {
+              setHudHidden(true);
+            }
+          }, 3600);
+        }
+      }
+
+      function toggleStageCollapse(forceState) {
+        state.isStageCollapsed = typeof forceState === 'boolean' ? forceState : !state.isStageCollapsed;
+        if (state.isStageCollapsed) {
+          el.playerStage.classList.add('hidden');
+          el.toggleMiniLabel.textContent = 'แสดงจอ';
+          el.toggleMiniIcon.style.transform = 'rotate(180deg)';
+        } else {
+          el.playerStage.classList.remove('hidden');
+          el.toggleMiniLabel.textContent = 'ซ่อนจอ';
+          el.toggleMiniIcon.style.transform = 'rotate(0deg)';
+        }
+      }
+
+      function renderCategoryTabs() {
+        if (!el.categoryTabs) return;
+        el.categoryTabs.innerHTML = '';
+        CATEGORIES.forEach((cat) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          const active = state.activeCategory === cat;
+          btn.className = `px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition active:scale-95 ${
+            active
+              ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+              : 'bg-surface hover:bg-card text-slate-300 border border-slate-800'
+          }`;
+          btn.textContent = cat;
+          btn.addEventListener('click', () => {
+            state.activeCategory = cat;
+            renderCategoryTabs();
+            renderChannelList();
+          });
+          el.categoryTabs.appendChild(btn);
+        });
+      }
+
+      function getFilteredChannels() {
+        const q = state.searchQuery.trim().toLowerCase();
+        return state.channels.filter((ch) => {
+          const matchesCat =
+            state.activeCategory === 'ทั้งหมด' ||
+            (state.activeCategory === 'รายการโปรด' && state.favorites.has(ch.id)) ||
+            ch.category === state.activeCategory;
+
+          if (!matchesCat) return false;
+          if (!q) return true;
+
+          return (
+            ch.name.toLowerCase().includes(q) ||
+            (ch.desc && ch.desc.toLowerCase().includes(q)) ||
+            ch.category.toLowerCase().includes(q)
+          );
+        });
+      }
+
+      function renderChannelList() {
+        if (!el.channelList || !el.emptyState) return;
+        const filtered = getFilteredChannels();
+        el.channelList.innerHTML = '';
+
+        if (filtered.length === 0) {
+          el.emptyState.classList.remove('hidden');
+          return;
+        }
+        el.emptyState.classList.add('hidden');
+
+        filtered.forEach((ch) => {
+          const isActive = ch.id === state.currentChannelId;
+          const isFav = state.favorites.has(ch.id);
+
+          const card = document.createElement('div');
+          card.className = `group flex items-center justify-between gap-2.5 p-2.5 rounded-2xl border transition cursor-pointer ${
+            isActive
+              ? 'bg-card border-emerald-500/70 shadow-lg shadow-emerald-500/10'
+              : 'bg-surface hover:bg-card/80 border-slate-800/90'
+          }`;
+
+          card.addEventListener('click', () => {
+            loadChannel(ch.id, true);
+          });
+
+          const left = document.createElement('div');
+          left.className = 'flex items-center gap-3 min-w-0 flex-1';
+
+          const logo = document.createElement('img');
+          logo.src = ch.logo || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop';
+          logo.alt = ch.name;
+          logo.className = 'w-12 h-12 rounded-xl object-cover bg-obsidian border border-slate-700/70 shrink-0';
+          logo.loading = 'lazy';
+
+          const info = document.createElement('div');
+          info.className = 'min-w-0 flex-1';
+
+          const titleRow = document.createElement('div');
+          titleRow.className = 'flex items-center gap-1.5';
+
+          const title = document.createElement('p');
+          title.className = `text-sm font-bold truncate ${isActive ? 'text-emerald-400' : 'text-white'}`;
+          title.textContent = ch.name;
+
+          titleRow.appendChild(title);
+
+          if (isActive) {
+            const playingPill = document.createElement('span');
+            playingPill.className = 'px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 shrink-0';
+            playingPill.textContent = 'กำลังเล่น';
+            titleRow.appendChild(playingPill);
+          }
+
+          const meta = document.createElement('div');
+          meta.className = 'flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5 truncate';
+          meta.innerHTML = `<span class="text-sky-400 font-semibold">${ch.category}</span><span>•</span><span class="truncate">${ch.desc || ch.url}</span>`;
+
+          info.appendChild(titleRow);
+          info.appendChild(meta);
+          left.appendChild(logo);
+          left.appendChild(info);
+
+          const actions = document.createElement('div');
+          actions.className = 'flex items-center gap-1 shrink-0';
+
+          const favBtn = document.createElement('button');
+          favBtn.type = 'button';
+          favBtn.className = `p-2 rounded-xl hover:bg-slate-700/70 transition ${isFav ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'}`;
+          favBtn.title = isFav ? 'นำออกจากรายการโปรด' : 'เพิ่มในรายการโปรด';
+          favBtn.innerHTML = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>`;
+          favBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (state.favorites.has(ch.id)) {
+              state.favorites.delete(ch.id);
+              showToast('นำออกจากรายการโปรดแล้ว');
+            } else {
+              state.favorites.add(ch.id);
+              showToast('เพิ่มในรายการโปรดแล้ว');
+            }
+            saveFavorites();
+            if (ch.id === state.currentChannelId) updateFavButtonUI();
+            renderChannelList();
+          });
+          actions.appendChild(favBtn);
+
+          if (ch.isCustom) {
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'p-2 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition';
+            delBtn.title = 'ลบช่องที่เพิ่มเอง';
+            delBtn.innerHTML = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
+            delBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              state.channels = state.channels.filter((item) => item.id !== ch.id);
+              state.favorites.delete(ch.id);
+              saveCustomChannels();
+              saveFavorites();
+              showToast('ลบช่องเรียบร้อยแล้ว');
+              if (state.currentChannelId === ch.id) {
+                const nextId = state.channels[0]?.id || null;
+                if (nextId) loadChannel(nextId, true);
+              } else {
+                renderChannelList();
+              }
+            });
+            actions.appendChild(delBtn);
+          }
+
+          card.appendChild(left);
+          card.appendChild(actions);
+          el.channelList.appendChild(card);
+        });
+      }
+
+      function bindEvents() {
+        el.playPauseBtn?.addEventListener('click', () => {
+          if (!el.video) return;
+          if (el.video.paused) {
+            attemptUnmutedPlay();
+          } else {
+            el.video.pause();
+            updatePlayPauseUI(false);
+          }
+        });
+
+        el.muteBtn?.addEventListener('click', () => {
+          if (state.isMuted) {
+            applyVolumeToVideo(true);
+            try { el.video.play()?.catch(() => {}); } catch (_) {}
+          } else {
+            state.isMuted = true;
+            applyVolumeToVideo(false);
+          }
+        });
+
+        el.volumeSlider?.addEventListener('input', (e) => {
+          const val = parseInt(e.target.value, 10) / 100;
+          state.volume = val;
+          state.isMuted = val === 0;
+          applyVolumeToVideo(false);
+          if (val > 0 && el.video && el.video.paused) {
+            try { el.video.play()?.catch(() => {}); } catch (_) {}
+          }
+        });
+
+        el.unmutePromptBtn?.addEventListener('click', () => {
+          attemptUnmutedPlay();
+        });
+
+        el.retryStreamBtn?.addEventListener('click', () => {
+          if (state.currentChannelId) {
+            loadChannel(state.currentChannelId, true);
+          }
+        });
+
+        el.nextChannelBtn?.addEventListener('click', () => {
+          if (!state.channels.length) return;
+          const idx = state.channels.findIndex((c) => c.id === state.currentChannelId);
+          const next = state.channels[(idx + 1) % state.channels.length];
+          loadChannel(next.id, true);
+        });
+
+        el.qualitySelect?.addEventListener('change', (e) => {
+          const lvl = parseInt(e.target.value, 10);
+          if (hlsInstance) {
+            hlsInstance.currentLevel = lvl;
+            showToast(lvl === -1 ? 'สลับเป็นความละเอียดอัตโนมัติ (Auto)' : 'เปลี่ยนระดับความละเอียดแล้ว');
+          }
+        });
+
+        el.overlayFullscreenBtn?.addEventListener('click', toggleFullscreen);
+        el.bottomFullscreenBtn?.addEventListener('click', toggleFullscreen);
+        el.rotateLandscapeBtn?.addEventListener('click', toggleLandscapeMode);
+
+        el.toggleHudBtn?.addEventListener('click', () => {
+          setHudHidden(true);
+          showToast('แตะหน้าจอวิดีโอเพื่อแสดงปุ่มควบคุมอีกครั้ง');
+        });
+
+        el.playerStage?.addEventListener('click', (e) => {
+          if (e.target.closest('button, select, input')) return;
+
+          const now = Date.now();
+          if (now - lastTapTime < 300) {
+            lastTapTime = 0;
+            toggleFullscreen();
+            return;
+          }
+          lastTapTime = now;
+
+          if (state.isHudHidden) {
+            setHudHidden(false);
+          } else {
+            scheduleHudAutoHide();
+          }
+        });
+
+        document.addEventListener('fullscreenchange', updateFullscreenUI);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+
+        window.addEventListener('resize', () => {
+          if (state.isRotatedLandscape) syncRotatedDimensions();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && isAnyFullscreen()) {
+            exitFullscreen();
+          }
+        });
+
+        el.video?.addEventListener('play', () => {
+          updatePlayPauseUI(true);
+          el.unmutePromptBtn.classList.add('hidden');
+          scheduleHudAutoHide();
+        });
+
+        el.video?.addEventListener('pause', () => {
+          updatePlayPauseUI(false);
+          setHudHidden(false);
+        });
+
+        el.video?.addEventListener('playing', () => {
+          el.loadingSpinner.classList.add('hidden');
+          el.loadingSpinner.classList.remove('flex');
+        });
+
+        el.video?.addEventListener('waiting', () => {
+          el.loadingSpinner.classList.remove('hidden');
+          el.loadingSpinner.classList.add('flex');
+        });
+
+        el.video?.addEventListener('error', () => {
+          el.loadingSpinner.classList.add('hidden');
+          el.loadingSpinner.classList.remove('flex');
+          showStreamError('ไม่สามารถโหลดไฟล์สตรีมได้ กรุณาตรวจสอบลิงก์หรือเครือข่าย');
+        });
+
+        el.favCurrentBtn?.addEventListener('click', () => {
+          if (!state.currentChannelId) return;
+          if (state.favorites.has(state.currentChannelId)) {
+            state.favorites.delete(state.currentChannelId);
+            showToast('นำออกจากรายการโปรดแล้ว');
+          } else {
+            state.favorites.add(state.currentChannelId);
+            showToast('เพิ่มในรายการโปรดแล้ว');
+          }
+          saveFavorites();
+          updateFavButtonUI();
+          renderChannelList();
+        });
+
+        el.toggleMiniBarBtn?.addEventListener('click', () => toggleStageCollapse());
+
+        el.searchInput?.addEventListener('input', (e) => {
+          state.searchQuery = e.target.value;
+          el.clearSearchBtn?.classList.toggle('hidden', !state.searchQuery.trim());
+          renderChannelList();
+        });
+
+        el.clearSearchBtn?.addEventListener('click', () => {
+          if (el.searchInput) el.searchInput.value = '';
+          state.searchQuery = '';
+          el.clearSearchBtn?.classList.add('hidden');
+          renderChannelList();
+        });
+
+        const openModal = () => {
+          el.addStreamModal?.classList.remove('hidden');
+          el.addStreamModal?.classList.add('flex');
+          el.streamNameInput?.focus();
+        };
+        const closeModal = () => {
+          el.addStreamModal?.classList.add('hidden');
+          el.addStreamModal?.classList.remove('flex');
+          el.addStreamForm?.reset();
+        };
+
+        el.openAddStreamBtn?.addEventListener('click', openModal);
+        el.closeModalBtn?.addEventListener('click', closeModal);
+        el.cancelModalBtn?.addEventListener('click', closeModal);
+        el.addStreamModal?.addEventListener('click', (e) => {
+          if (e.target === el.addStreamModal) closeModal();
+        });
+
+        el.addStreamForm?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const name = (el.streamNameInput?.value || '').trim();
+          const url = (el.streamUrlInput?.value || '').trim();
+          const category = el.streamCategoryInput?.value || 'กีฬา';
+          const logo = (el.streamLogoInput?.value || '').trim() || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop';
+          const referer = (el.streamRefererInput?.value || '').trim();
+
+          if (!name || !url) return;
+
+          const newChannel = {
+            id: 'custom-' + Date.now(),
+            name,
+            url,
+            category,
+            logo,
+            referer,
+            desc: referer ? `ลิงก์สตรีมที่เพิ่มเอง • Referer: ${referer}` : 'ลิงก์สตรีมที่เพิ่มเอง',
+            isCustom: true,
+          };
+
+          state.channels.unshift(newChannel);
+          saveCustomChannels();
+          closeModal();
+          renderChannelList();
+          loadChannel(newChannel.id, true);
+          showToast('เพิ่มและเริ่มเล่นช่องใหม่แล้ว');
+        });
+      }
+
+      try {
+        loadStorage();
+        applyVolumeToVideo(true);
+        renderCategoryTabs();
+        renderChannelList();
+        bindEvents();
+        setupGlobalFirstGestureUnmute();
+
+        if (state.currentChannelId) {
+          loadChannel(state.currentChannelId, true);
+        }
+      } catch (err) {
+        renderCategoryTabs();
+        renderChannelList();
+        showStreamError('เกิดข้อผิดพลาดระหว่างเริ่มระบบ: ' + (err && err.message ? err.message : 'ไม่ทราบสาเหตุ'));
+      }
+    })();
+  </script>
+</body>
+</html>
